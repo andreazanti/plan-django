@@ -5,14 +5,14 @@ from django.core.validators import EmailValidator, MinValueValidator, MaxValueVa
 from django.db import models
 
 STATUS = (
-    ('web','web'),
-    ('mobile','mobile')
-)
-
-WORK_ACTIVITY_TYPE = (
     ('new','new'),
     ('open','open'),
     ('closed','closed')
+)
+
+WORK_ACTIVITY_TYPE = (
+    ('web','web'),
+    ('mobile','mobile')
 )
 
 class CustomBaseModel(models.Model):
@@ -25,15 +25,24 @@ class CustomBaseModel(models.Model):
 
 class Customer(CustomBaseModel):
     contact = models.CharField(max_length= 2048)
-    email = models.CharField(validators = [EmailValidator], max_length= 2048)
+    email = models.EmailField(max_length= 2048)
+
+    def __str__(self):
+        return self.email
+    
 
 class Project(CustomBaseModel):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
     name = models.CharField(max_length=2048)
+    status = models.CharField(choices=STATUS, max_length = 2048)
+
+    def __str__(self):
+        return self.name
+    
 
 class SaleActivity(CustomBaseModel):
     desc = models.CharField(max_length= 2048)
-    days = models.IntegerField(validators=[MinValueValidator(0)])
+    days = models.PositiveIntegerField(validators=[MinValueValidator(0)])
     price = models.IntegerField(validators=[MinValueValidator(0)])
     status = models.CharField(choices=STATUS, max_length= 2048)
     project = models.ForeignKey(Project, on_delete= models.CASCADE)
