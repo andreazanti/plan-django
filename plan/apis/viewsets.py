@@ -8,6 +8,9 @@ from plan.models import *
 from plan.apis.serializers import *
 
 
+# A view set is responsible to handle all the operations for the data
+# It defines the query set to which do operations
+# and a serializer class that takes the request,
 class CustomerViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
                    mixins.UpdateModelMixin,
@@ -49,4 +52,55 @@ class ProjectViewSet(mixins.CreateModelMixin,
 
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+
+class BillingActivityViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   GenericViewSet):
+
+    queryset = BillingActivity.objects.all()
+    serializer_class = BillingActivitySerializer
+
+
+class PurchaseActivityViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   GenericViewSet):
+
+    queryset = PurchaseActivity.objects.all()
+    serializer_class = PurchaseActivitySerializer
+
+class SaleActivityViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   GenericViewSet):
+
+    queryset = SaleActivity.objects.all()
+    serializer_class = SaleActivitySerializer
+
+class WorkActivityViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   GenericViewSet):
+
+    queryset = WorkActivity.objects.all()
+    serializer_class = WorkActivitySerializer
+
+# class FinancialActivityViewSet(mixins.CreateModelMixin,
+#                    mixins.RetrieveModelMixin,
+#                    mixins.UpdateModelMixin,
+#                    mixins.DestroyModelMixin,
+#                    mixins.ListModelMixin,
+#                    GenericViewSet):
+
+#     queryset = FinancialActivity.objects.all()
+#     serializer_class = FinancialActivitySerializer
     

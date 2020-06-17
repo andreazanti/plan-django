@@ -3,6 +3,7 @@ from enum import Enum
 import django
 from django.core.validators import EmailValidator, MinValueValidator, MaxValueValidator
 from django.db import models
+from django.contrib.auth.models import User
 
 STATUS = (
     ('new','new'),
@@ -53,7 +54,7 @@ class WorkActivity(CustomBaseModel):
     type = models.CharField(choices=WORK_ACTIVITY_TYPE, max_length= 2048)
     status = models.CharField(choices=STATUS, max_length= 2048)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    #TODO: add user ref
+    users = models.ManyToManyField(User)
 
 class FinancialActivity(CustomBaseModel):
     invoice_number = models.CharField(null= True, blank = True, max_length= 2048)
@@ -64,13 +65,13 @@ class FinancialActivity(CustomBaseModel):
 class PurchaseActivity(CustomBaseModel):
     desc = models.CharField(max_length= 2048)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    financial_activity = models.OneToOneField(FinancialActivity, on_delete=models.CASCADE)
+    # financial_activity = models.OneToOneField(FinancialActivity, on_delete=models.CASCADE)
 
 class BillingActivity(CustomBaseModel):
     desc = models.CharField(max_length= 2048)
     days = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    financial_activity = models.OneToOneField(FinancialActivity, on_delete=models.CASCADE)
+    # financial_activity = models.OneToOneField(FinancialActivity, on_delete=models.CASCADE)
 
 class WorkLogActivity(CustomBaseModel):
     desc = models.CharField(max_length=2048)
@@ -78,3 +79,7 @@ class WorkLogActivity(CustomBaseModel):
     hours = models.FloatField(validators= [MinValueValidator(0)])
     work_activity = models.ForeignKey(WorkActivity, on_delete= models.SET_NULL, null = True)
     #TODO: put user ref here
+
+
+class User(CustomBaseModel, User):
+    pass
