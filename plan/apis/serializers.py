@@ -247,5 +247,3 @@ class WorkActivitySerializer(serializers.ModelSerializer):
     # def create(self, validated_data):
     #     validated_data.po
    
-
-    

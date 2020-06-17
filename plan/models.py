@@ -1,9 +1,9 @@
 from enum import Enum
-
 import django
 from django.core.validators import EmailValidator, MinValueValidator, MaxValueValidator
+from commons.models import CustomBaseModel
 from django.db import models
-from django.contrib.auth.models import User
+from users.models import User
 
 STATUS = (
     ('new','new'),
@@ -16,22 +16,10 @@ WORK_ACTIVITY_TYPE = (
     ('mobile','mobile')
 )
 
-class CustomBaseModel(models.Model):
-    created_at = models.DateField(auto_now_add=True)
-    updated_at = models.DateField(auto_now=True)
-    notes = models.CharField(null = True, blank = True, max_length = 2048)
-    # This set the class as abstract class and does not create a 1 to 1 relation when extending the class
-    class Meta:
-        abstract = True
 
-class Customer(CustomBaseModel):
+class Customer(CustomBaseModel): 
     contact = models.CharField(max_length= 2048)
     email = models.EmailField(max_length= 2048)
-
-    def __str__(self):
-        return self.email
-    
-
 class Project(CustomBaseModel):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
     name = models.CharField(max_length=2048)
@@ -40,7 +28,6 @@ class Project(CustomBaseModel):
     def __str__(self):
         return self.name
     
-
 class SaleActivity(CustomBaseModel):
     desc = models.CharField(max_length= 2048)
     days = models.PositiveIntegerField(validators=[MinValueValidator(0)])
@@ -79,7 +66,3 @@ class WorkLogActivity(CustomBaseModel):
     hours = models.FloatField(validators= [MinValueValidator(0)])
     work_activity = models.ForeignKey(WorkActivity, on_delete= models.SET_NULL, null = True)
     #TODO: put user ref here
-
-
-class User(CustomBaseModel, User):
-    pass
