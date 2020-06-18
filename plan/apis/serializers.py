@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-
-from ..models import *
+from plan.models import *
+from users.apis.serializers import UserSerializer
 
 # Serializers are responsible to handle all the logic for the data 
 # the viewset pass the data directly to it ( parse request, call the serializer.save() method, that create or update an instance then pass back the validateddata
@@ -231,19 +231,54 @@ class SaleActivitySerializer(serializers.ModelSerializer):
         return SaleActivity.objects.get(id = validated_data['id'])
 
 
+
+
+class NestedUserSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False) 
+    password = serializers.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = ['id','password']
+
 class WorkActivitySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False) 
-    project = ProjectSerializer(required=True, customer_serializer_included=False)
+    project = ProjectSerializer(customer_serializer_included=False)
+    users = NestedUserSerializer(required = False, many = True)
+    
 
     class Meta: 
         model = WorkActivity
         fields = '__all__'
 
-    def validate(self, att):   
+    def validate(self, attr):   
         # Check if project id exists
         if not Project.objects.filter(id = attr['project']['id']).exists(): 
             raise ValidationError({'project': 'Project needs to exists'})
 
-    # def create(self, validated_data):
-    #     validated_data.po
-   
+        return attr
+
+    def create(self, validated_data):
+        project = validated_data.pop('project')
+        
+        if 'users' in validated_data:
+            users = validated_data.pop('users')
+
+        work_activity = WorkActivity(**validated_data)
+            
+        if len(users) > 0:
+            for user in users:
+                work_activity.users.add(User.objects.get(id = user['id'])) 
+        #TODO: project is not set
+        setattr(WorkActivity, 'project', Project.objects.filter(id = project['id']).get())
+
+        print("test")
+        print(work_activity)
+        new_work_activity = work_activity.save()
+
+        return new_work_activity
+                
+
+    # def update(self, instance, validate_data):
+    #     project = validated_data.pop('project')
+    #     return validate_data
