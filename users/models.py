@@ -14,10 +14,6 @@ class User(CustomBaseModel, AbstractUser):
     password = models.CharField(max_length = 128)
     email = models.EmailField(unique=True,  
         max_length=128,
-        #TODO: fix this NOT WORK!
-        # error_messages={
-        #     'unique': _("A user with that username already exists."),
-        # },
     )
     
     USERNAME_FIELD = 'email'
