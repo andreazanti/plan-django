@@ -22,7 +22,7 @@ class Customer(CustomBaseModel):
     email = models.EmailField(max_length= 2048)
 class Project(CustomBaseModel):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
-    name = models.CharField(max_length=2048)
+    name = models.CharField(max_length=128)
     status = models.CharField(choices=STATUS, max_length = 2048)
 
     def __str__(self):
@@ -61,7 +61,7 @@ class BillingActivity(CustomBaseModel):
     # financial_activity = models.OneToOneField(FinancialActivity, on_delete=models.CASCADE)
 
 class WorkLogActivity(CustomBaseModel):
-    desc = models.CharField(max_length=2048)
+    desc = models.CharField(max_length=128)
     day = models.DateField(default= django.utils.timezone.now)
     hours = models.FloatField(validators= [MinValueValidator(0)])
     work_activity = models.ForeignKey(WorkActivity, on_delete= models.SET_NULL, null = True)

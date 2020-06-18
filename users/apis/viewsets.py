@@ -3,10 +3,8 @@ from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from users.apis.serializers import *
-from plan.apis.serializers import *
-
-
+from users.apis.serializers import User
+from users.apis.serializers import UserSerializer
 
 class UserViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
@@ -17,3 +15,4 @@ class UserViewSet(mixins.CreateModelMixin,
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+

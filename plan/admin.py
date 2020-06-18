@@ -1,7 +1,6 @@
 from django.contrib import admin
 from .models import WorkLogActivity,PurchaseActivity, WorkActivity, BillingActivity, SaleActivity,FinancialActivity,  Project, Customer
 
-
 admin.site.register(PurchaseActivity)
 admin.site.register(WorkActivity)
 admin.site.register(Customer)

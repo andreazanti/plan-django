@@ -1,23 +1,25 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
-from plan.apis.serializers import * 
-from plan.models import Customer
-# from django.contrib.auth.models import User
+from users.models import User
 
 
 class UserSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
     first_name = serializers.CharField()
     last_name = serializers.CharField()
-    email = serializers.EmailField()
     password = serializers.CharField()
+    email = serializers.EmailField()
 
     class Meta:
-        model = User
-        fields = '__all__'
+	    model = User
+	    fields = ['id', 'first_name', 'last_name', 'email']
 
-    # def create(self, validated_data):
-    #     user = User.objects.create_user(**validated_data)
-    #     token = Token.objects.create(user=user)
-    #     return token
+    # TODO: Token is created but django raises an exception
+    def create(self, validated_data):
+        print("TEST")
+        print(validated_data)
+        user = User.objects.create_user(**validated_data)
+        print("USER")
+        token = Token.objects.create(user = user)
+        return token
