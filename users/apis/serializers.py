@@ -5,6 +5,7 @@ from users.models import User
 
 
 class UserSerializer(serializers.Serializer):
+    # TODO: Ask why i need to indicate expliocity the fields ( in the other case it does alone)
     id = serializers.IntegerField(required=False)
     first_name = serializers.CharField()
     last_name = serializers.CharField()
@@ -15,11 +16,8 @@ class UserSerializer(serializers.Serializer):
 	    model = User
 	    fields = ['id', 'first_name', 'last_name', 'email']
 
-    # TODO: Token is created but django raises an exception
-    def create(self, validated_data):
-        print("TEST")
-        print(validated_data)
-        user = User.objects.create_user(**validated_data)
-        print("USER")
-        token = Token.objects.create(user = user)
-        return token
+    
+
+
+    
+    
