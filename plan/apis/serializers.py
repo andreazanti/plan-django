@@ -173,8 +173,7 @@ class BillingActivitySerializer(serializers.ModelSerializer):
         
         new_billingActivity = super().update(instance, validated_data)
 
-        #TODO: udate nested field
-        # FinancialActivitySerializer.update(FinancialActivity.objects.get(id = financial_activity['id']), financial_activity)
+        FinancialActivity.objects.filter(id = financial_activity['id']).update(**financial_activity)
 
         # new_billingActivity.financial_activity = new_financial_activity
 
