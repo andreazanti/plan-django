@@ -127,13 +127,16 @@ REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'users.apis.serializers.UserSerializer',
 }
 
+
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_USERNAME_REQUIRED = False
 
-
+AUTHENTICATION_BACKENDS = (
+    'users.auth.backends.AuthenticationBackend',  # Custom login
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
