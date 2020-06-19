@@ -132,8 +132,6 @@ class BillingActivitySerializer(serializers.ModelSerializer):
     # this permitts to user this serializer for this field
     project = ProjectSerializer(required=True, customer_serializer_included = False)
     
-    #TODO: 
-    # Now can be updated also financial activity that are not in relation with current billing activity
 
 
     class Meta: 
@@ -174,7 +172,7 @@ class BillingActivitySerializer(serializers.ModelSerializer):
         
         new_billing_activity = super().update(instance, validated_data)
 
-        FinancialActivity.objects.filter(id = financial_activity['id']).update(**financial_activity)
+        FinancialActivity.objects.filter(id = instance.financial_activity.id).update(**financial_activity)
 
         # this is not necessary for the lazy evaluation when return the query is runned ( i think  :P)
         # new_billingActivity.financial_activity = new_financial_activity
