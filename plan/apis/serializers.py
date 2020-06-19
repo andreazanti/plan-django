@@ -132,7 +132,8 @@ class BillingActivitySerializer(serializers.ModelSerializer):
     # this permitts to user this serializer for this field
     project = ProjectSerializer(required=True, customer_serializer_included = False)
     
-    #N:B billing activity has only one financial activity
+    #TODO: 
+    # Now can be updated also financial activity that are not in relation with current billing activity
 
 
     class Meta: 
@@ -171,13 +172,14 @@ class BillingActivitySerializer(serializers.ModelSerializer):
         project_id = validated_data.pop('project')['id'] 
 
         
-        new_billingActivity = super().update(instance, validated_data)
+        new_billing_activity = super().update(instance, validated_data)
 
         FinancialActivity.objects.filter(id = financial_activity['id']).update(**financial_activity)
 
+        # this is not necessary for the lazy evaluation when return the query is runned ( i think  :P)
         # new_billingActivity.financial_activity = new_financial_activity
 
-        return new_billingActivity
+        return new_billing_activity
 
 
 class PurchaseActivitySerializer(serializers.ModelSerializer):
