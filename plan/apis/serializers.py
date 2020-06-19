@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from plan.models import *
 from users.apis.serializers import UserSerializer
+from django.shortcuts import get_object_or_404
 
 # Serializers are responsible to handle all the logic for the data 
 # the viewset pass the data directly to it ( parse request, call the serializer.save() method, that create or update an instance then pass back the validateddata
@@ -90,74 +91,95 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     #     return project
             
-# class FinancialActivitySerializer(serializers.ModelSerializer):
-#     id = serializers.IntegerField(required=False)
-#     purchase_activity = serializers.IntegerField()
-#     billing_activity = serializers.IntegerField()
 
-#     class Meta: 
-#         model = FinancialActivity
-#         fields = '__all__'
+class FinancialActivitySerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    # purchase_activity = serializers.IntegerField()
+    # billing_activity = serializers.IntegerField()
 
-#     def validate(self, attr): 
+    class Meta: 
+        model = FinancialActivity
+        fields = '__all__'
+
+    # def validate(self, attr): 
         
-#         if att['purchase_activity']:
-#             if not PurchaseActivity.objects.filter(id = attr['purchase_activity']['id']).exists():
-#                 raise({'purchaseActivity': 'Needs to exist'})
+    #     if attr['purchase_activity']:
+    #         if not PurchaseActivity.objects.filter(id = attr['purchase_activity']['id']).exists():
+    #             raise({'purchaseActivity': 'Needs to exist'})
 
-#         if att['billing_activity']:
-#             if not BillingActivity.objects.filter(id = attr['billing_activity']['id']).exists():
-#                 raise({'billingActivity': 'Needs to exist'})   
+    #     if attr['billing_activity']:
+    #         if not BillingActivity.objects.filter(id = attr['billing_activity']['id']).exists():
+    #             raise({'billingActivity': 'Needs to exist'})   
 
-#         return attr
+    #     return attr
 
-#     def create(self, validated_data):
-#         return FinancialActivity.objects.create(**validated_data) 
+    # def create(self, validated_data):
+    #     return FinancialActivity.objects.create(**validated_data) 
 
-#     def update(self, instance, validated_data): 
+    # def update(self, instance, validated_data): 
         
-#         if validated_data['purchase_activity']:
-#             purchase_activity = validated_data.pop('purchase_activity')
-#         if validated_data['billing_activity']: 
-#             billing_activity = validated_data.pop('billing_activity')
+    #     if validated_data['purchase_activity']:
+    #         purchase_activity = validated_data.pop('purchase_activity')
+    #     if validated_data['billing_activity']: 
+    #         billing_activity = validated_data.pop('billing_activity')
 
-#         PurchaseActivity.objects.update(validated_data['id'])
+    #     PurchaseActivity.objects.update(validated_data['id'])
         
 
 class BillingActivitySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False) 
-    # financial_activity =  FinancialActivitySerializer(required=True)
+    financial_activity =  FinancialActivitySerializer(required=True)
     # this permitts to user this serializer for this field
     project = ProjectSerializer(required=True, customer_serializer_included = False)
     
+    #N:B billing activity has only one financial activity
+
+
     class Meta: 
         model = BillingActivity
         fields = '__all__'
+
         
     def validate(self, attr):
+        # Check if work activity exists during update
+        request = self.context.get('request', None)
+        if request and getattr(request, 'method', None) == "PUT": 
+            # Check if financial activity exists and is associated to this billing activity
+            if not FinancialActivity.objects.filter(id = attr['financial_activity']['id']).exists():
+                raise ValidationError({'financial_activity': 'Financial activity needs to exists'})        
+        
         # Check if project id exists
         if not Project.objects.filter(id = attr['project']['id']).exists(): 
             raise ValidationError({'project': 'Project needs to exists'})
-        # Check if financial activity exists
-        # if not FinancialActivity.objects.filter(id = attr['financial_activity']['ìd']).exists():
-        #     raise ValidationError({'financial_activity': 'Financial activity needs to exists'})
+    
         return attr
 
     def create(self, validated_data):
-        # financial_activity = validated_data.pop('financial_activity')
+        financial_activity = validated_data.pop('financial_activity')
         project_id = validated_data.pop('project')['id']
-        billing_activity = BillingActivity.objects.create(project_id = project_id , **validated_data)
-
-        # FinancialActivity.objects.create(financial_activity)
-        # validated_data['financial_activity'] = financial_activity
+        
+        financial_activity = FinancialActivity.objects.create(**financial_activity)
+        billing_activity = BillingActivity.objects.create(
+            project_id = project_id,
+            financial_activity_id = financial_activity.id, 
+            **validated_data)
         
         return billing_activity
 
     def update(self, instance, validated_data):
-        validated_data.pop('project')
-        BillingActivity.objects.filter(id = validated_data['id']).update(**validated_data)       
-       
-        return BillingActivity.objects.get(id = validated_data['id'])
+        financial_activity = validated_data.pop('financial_activity')
+        project_id = validated_data.pop('project')['id'] 
+
+        
+        new_billingActivity = super().update(instance, validated_data)
+
+        #TODO: udate nested field
+        # FinancialActivitySerializer.update(FinancialActivity.objects.get(id = financial_activity['id']), financial_activity)
+
+        # new_billingActivity.financial_activity = new_financial_activity
+
+        return new_billingActivity
+
 
 class PurchaseActivitySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False) 
@@ -229,7 +251,6 @@ class SaleActivitySerializer(serializers.ModelSerializer):
         SaleActivity.objects.filter(id = validated_data['id']).update(**validated_data)       
        
         return SaleActivity.objects.get(id = validated_data['id'])
-
 
 
 class NestedUserSerializer(serializers.ModelSerializer):

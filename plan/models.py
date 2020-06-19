@@ -61,7 +61,7 @@ class BillingActivity(CustomBaseModel):
     desc = models.CharField(max_length= 2048)
     days = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    # financial_activity = models.OneToOneField(FinancialActivity, on_delete=models.CASCADE)
+    financial_activity = models.OneToOneField(FinancialActivity, on_delete=models.CASCADE)
 
 class WorkLogActivity(CustomBaseModel):
     desc = models.CharField(max_length=128)
