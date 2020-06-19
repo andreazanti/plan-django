@@ -232,14 +232,13 @@ class SaleActivitySerializer(serializers.ModelSerializer):
 
 
 
-
 class NestedUserSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False) 
-    password = serializers.CharField(required=False)
 
     class Meta:
         model = User
-        fields = ['id','password']
+        fields = ['id']
+
 
 class WorkActivitySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False) 
@@ -251,10 +250,23 @@ class WorkActivitySerializer(serializers.ModelSerializer):
         model = WorkActivity
         fields = '__all__'
 
+    def get_fields(self, *args, **kwargs): 
+        fields = super(WorkActivitySerializer, self).get_fields(*args, **kwargs)
+        request = self.context.get('request', None)
+        if request and getattr(request, 'method', None) == "PUT": 
+            fields['project'].required = False
+        return fields
+
     def validate(self, attr):   
         # Check if project id exists
-        if not Project.objects.filter(id = attr['project']['id']).exists(): 
+        if 'project' in attr and not Project.objects.filter(id = attr['project']['id']).exists(): 
             raise ValidationError({'project': 'Project needs to exists'})
+
+        # Check all the users existss
+        if 'users' in attr: 
+            for user in attr['users']:
+                if not User.objects.filter(id = user['id']).exists(): 
+                    raise ValidationError({'user': 'User needs to exists'})
 
         return attr
 
@@ -264,21 +276,42 @@ class WorkActivitySerializer(serializers.ModelSerializer):
         if 'users' in validated_data:
             users = validated_data.pop('users')
 
-        work_activity = WorkActivity(**validated_data)
+        work_activity = WorkActivity.objects.create(**validated_data, project_id = project['id'])
             
         if len(users) > 0:
             for user in users:
                 work_activity.users.add(User.objects.get(id = user['id'])) 
-        #TODO: project is not set
-        setattr(WorkActivity, 'project', Project.objects.filter(id = project['id']).get())
 
-        print("test")
-        print(work_activity)
-        new_work_activity = work_activity.save()
+        setattr(work_activity, 'project', Project.objects.filter(id = project['id']).get())
 
-        return new_work_activity
+        work_activity.save()
+
+        return work_activity
                 
 
-    # def update(self, instance, validate_data):
-    #     project = validated_data.pop('project')
-    #     return validate_data
+    def update(self, instance, validated_data):
+        
+        if 'users' in validated_data:
+            users = validated_data.pop('users')
+            users = list(map(lambda x: x['id'], users))
+
+    
+        old_users = instance.users.all()
+
+        # If exists at least one user delete all users not in request
+        if old_users.count() > 0:
+            for old_user in old_users:
+                if old_user.id not in users:
+                    instance.users.remove(User.objects.get(id = old_user.id))
+        # Delete all users
+        else:
+            instance.users.clear()
+                                        
+        # Add new users
+        if len(users) > 0:
+            for user in users:
+                instance.users.add(User.objects.get(id = user)) 
+
+        instance.save()
+
+        return instance

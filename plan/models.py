@@ -43,6 +43,9 @@ class WorkActivity(CustomBaseModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     users = models.ManyToManyField(User)
 
+    def __str__(self):
+        return self.desc
+
 class FinancialActivity(CustomBaseModel):
     invoice_number = models.CharField(null= True, blank = True, max_length= 2048)
     invoice_date = models.DateTimeField(null= True, blank= True, max_length= 2048)
